@@ -1,24 +1,25 @@
 // /client/App.js
 import React, { Component } from "react";
 import axios from "axios";
+import DataCrudForm from "./DataCrudForm";
+const CircularJSON = require('circular-json');
+
 
 class App extends Component {
   // initialize our state
   state = {
-    data: [],
-    id: 0,
-    message: null,
-    intervalIsSet: false,
-    idToDelete: null,
-    idToUpdate: null,
-    objectToUpdate: null
+    message: 'Please Login',
+      loginData: {
+      userName: '',
+      password: ''
+    }
   };
 
   // when component mounts, first thing it does is fetch all existing data in our db
   // then we incorporate a polling logic so that we can easily see if our db has
   // changed and implement those changes into our UI
   componentDidMount() {
-    this.getDataFromDb();
+   // this.getDataFromDb();
     /*if (!this.state.intervalIsSet) {
       let interval = setInterval(this.getDataFromDb, 1000);
       this.setState({ intervalIsSet: interval });
@@ -28,10 +29,8 @@ class App extends Component {
   // never let a process live forever
   // always kill a process everytime we are done using it
   componentWillUnmount() {
-    if (this.state.intervalIsSet) {
-      clearInterval(this.state.intervalIsSet);
-      this.setState({ intervalIsSet: null });
-    }
+     // clearInterval(this.state.intervalIsSet);
+      this.setState({ username: null, password: null });
   }
 
   // just a note, here, in the front end, we use the id key of our data object
@@ -41,13 +40,13 @@ class App extends Component {
 
   // our first get method that uses our backend api to
   // fetch data from our data base
-  getDataFromDb = () => {
+ /* getDataFromDb = () => {
     fetch("http://localhost:3001/api/getData")
       .then(data => data.json())
       .then(res => this.setState({ data: res.data }));
-  };
+  };*/
 
-  // our put method that uses our backend api
+ /* // our put method that uses our backend api
   // to create new query into our data base
   putDataToDB = message => {
     let currentIds = this.state.data.map(data => data.id);
@@ -93,6 +92,19 @@ class App extends Component {
       id: objIdToUpdate,
       update: { message: updateToApply }
     });
+  };*/
+
+  checkLogin= (username, password) => {
+      axios.post("http://localhost:3001/api/checkLogin", {
+          username: username,
+          password: password
+      }).then(response => {
+         let test = JSON.stringify(response);
+          this.setState({ message: 'Login Successful' + test});
+          console.log(test);
+          //return response.json()
+      });
+
   };
 
   // here is our UI
@@ -101,62 +113,35 @@ class App extends Component {
   render() {
     const { data } = this.state;
     return (
-      <div>
-        <ul>
-          {data.length <= 0
-            ? "NO DB ENTRIES YET"
-            : data.map(dat => (
-                <li style={{ padding: "10px" }} key={data.message}>
-                  <span style={{ color: "gray" }}> id: </span> {dat.id} <br />
-                  <span style={{ color: "gray" }}> data: </span>
-                  {dat.message}
-                </li>
-              ))}
-        </ul>
+        <div> <p>{this.state.message}</p>
+      <form action="" onSubmit={this.checkLogin}>
         <div style={{ padding: "10px" }}>
           <input
             type="text"
-            onChange={e => this.setState({ message: e.target.value })}
-            placeholder="add something in the database"
+            onChange={e => this.setState({ username: e.target.value })}
+            placeholder="username"
             style={{ width: "200px" }}
           />
-          <button onClick={() => this.putDataToDB(this.state.message)}>
-            ADD
-          </button>
         </div>
         <div style={{ padding: "10px" }}>
           <input
-            type="text"
+            type="password"
             style={{ width: "200px" }}
-            onChange={e => this.setState({ idToDelete: e.target.value })}
-            placeholder="put id of item to delete here"
+            onChange={e => this.setState({ password: e.target.value })}
+            placeholder="password"
           />
-          <button onClick={() => this.deleteFromDB(this.state.idToDelete)}>
-            DELETE
-          </button>
         </div>
         <div style={{ padding: "10px" }}>
-          <input
-            type="text"
-            style={{ width: "200px" }}
-            onChange={e => this.setState({ idToUpdate: e.target.value })}
-            placeholder="id of item to update here"
-          />
-          <input
-            type="text"
-            style={{ width: "200px" }}
-            onChange={e => this.setState({ updateToApply: e.target.value })}
-            placeholder="put new value of the item here"
-          />
           <button
             onClick={() =>
-              this.updateDB(this.state.idToUpdate, this.state.updateToApply)
+              this.checkLogin(this.state.username, this.state.password)
             }
           >
-            UPDATE
+            Submit
           </button>
         </div>
-      </div>
+      </form>
+       </div>
     );
   }
 }
